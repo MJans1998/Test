@@ -16,8 +16,6 @@ include-package-data = true  # if you have non-py files inside packages
 where = ["src"]
 include = [
   "my_agents*",
-  "my_assets*",
-  "my_config*",
   "my_envs*",
   "my_models*",
   "my_robots*",
