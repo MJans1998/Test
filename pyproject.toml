@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "options-sim"
 version = "0.1.0"
-requires-python = ">=3.10,<3.12"   
+requires-python = ">=3.10,<3.13"   
 dependencies = ["numpy>=1.23", "pyyaml>=6.0"]
 
 [tool.setuptools]
@@ -23,11 +23,6 @@ include = [
   "my_trainers*",
   "options_sim*"
 ]
-
-# Explicit non-.py files that must ship with wheels
-[tool.setuptools.package-data]
-my_assets = ["**/*.usd", "**/*.usdz", "**/*.yaml", "**/*.yml", "**/*.json"]
-my_envs   = ["**/*.yaml", "**/*.yml", "**/*.json"]
 
 [project.scripts]
 options-sim-train = "options_sim.cli.train:main"

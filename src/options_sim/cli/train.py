@@ -25,11 +25,12 @@ NORMALIZE = {
     "yes": "fifo",
     "no": "nofifo",
     # curriculum
-    "none": "none",
+    "none": "random",
     "curr1": "curr1",
     "curr2": "curr2",
-    # imitation
-    "g1d_g21": "g1d_g21",
+    # learning strategy
+    "RLIL": "RLIL",
+    "IL": "IL",
 }
 
 def _python_version_guard() -> None:
@@ -50,9 +51,9 @@ def _build_argparser() -> argparse.ArgumentParser:
     )
     p.add_argument("--algorithm", required=True, choices=["kamma", "ka-ddpg", "ka_ddpg"])
     p.add_argument("--action-dim", required=True, choices=["1d", "2d", "4d"])
-    p.add_argument("--fifo", required=True, choices=["yes", "no"])
-    p.add_argument("--curriculum", required=True, choices=["none", "curr1", "curr2"])
-    p.add_argument("--imitation", required=True, choices=["none", "g1d_g21"])
+    p.add_argument("--fifo", required=True, choices=["fifo", "nofifo"])
+    p.add_argument("--curriculum", required=True, choices=["random", "curr1", "curr2"])
+    p.add_argument("--learning-strategy", required=True, choices=["RLIL", "IL"])
 
     p.add_argument("--dry-run", action="store_true", help="Print the resolved script and exit.")
     p.add_argument("--list", action="store_true", help="List candidate legacy scripts with scores.")
@@ -74,8 +75,8 @@ def _build_argparser() -> argparse.ArgumentParser:
     )
     return p
 
-def _tuple_key(algorithm: str, action_dim: str, fifo: str, curriculum: str, imitation: str) -> str:
-    return "::".join([algorithm, action_dim, fifo, curriculum, imitation])
+def _tuple_key(algorithm: str, action_dim: str, fifo: str, curriculum: str, learning_strategy: str) -> str:
+    return "::".join([algorithm, action_dim, fifo, curriculum, learning_strategy])
 
 def _gather_candidates(root: Path, search_dirs: List[str]) -> List[Path]:
     files: List[Path] = []
@@ -115,7 +116,7 @@ def _resolve(
     action_dim: str,
     fifo: str,
     curriculum: str,
-    imitation: str,
+    learning_strategy: str,
     map_rel: str,
     search_rel: str,
     list_only: bool = False,
@@ -126,12 +127,12 @@ def _resolve(
         NORMALIZE[fifo],
         NORMALIZE[curriculum],
     ]
-    if imitation != "none":
-        tokens.append(NORMALIZE[imitation])
+    if learning_strategy != "none":
+        tokens.append(NORMALIZE[learning_strategy])
 
     # 1) explicit mapping wins
     mapping = _load_override_map((root / map_rel).resolve())
-    key = _tuple_key(algorithm, action_dim, fifo, curriculum, imitation)
+    key = _tuple_key(algorithm, action_dim, fifo, curriculum, learning_strategy)
     if key in mapping:
         p = (root / mapping[key]).resolve()
         return (p if p.exists() else None), tokens, []
@@ -161,7 +162,7 @@ def main(argv: List[str] | None = None) -> int:
         action_dim=args.action_dim,
         fifo=args.fifo,
         curriculum=args.curriculum,
-        imitation=args.imitation,
+        learning_strategy=args.learning_strategy,
         map_rel=args.map,
         search_rel=args.search_dirs,
         list_only=args.list
