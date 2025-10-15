@@ -15,22 +15,21 @@ RECOMMENDED_MAX = (3, 12)  # exclusive
 NORMALIZE = {
     # algorithm
     "kamma": "kamma",
-    "ka-ddpg": "ka_ddpg",
-    "ka_ddpg": "ka_ddpg",
+    "kaddpg": "kaddpg",
     # action dims
     "1d": "1d",
     "2d": "2d",
     "4d": "4d",
     # fifo
-    "yes": "fifo",
-    "no": "nofifo",
+    "fifo": "fifo",
+    "nofifo": "nofifo",
     # curriculum
-    "none": "random",
-    "curr1": "curr1",
-    "curr2": "curr2",
+    "random": "random",
+    "gv": "gv",
+    "bd": "bd",
     # learning strategy
-    "RLIL": "RLIL",
-    "IL": "IL",
+    "rlil": "rlil",
+    "il": "il",
 }
 
 def _python_version_guard() -> None:
@@ -49,11 +48,11 @@ def _build_argparser() -> argparse.ArgumentParser:
         prog="options-sim-train",
         description="Route to a legacy training script based on five switches."
     )
-    p.add_argument("--algorithm", required=True, choices=["kamma", "ka-ddpg", "ka_ddpg"])
+    p.add_argument("--algorithm", required=True, choices=["kamma", "kaddpg"])
     p.add_argument("--action-dim", required=True, choices=["1d", "2d", "4d"])
     p.add_argument("--fifo", required=True, choices=["fifo", "nofifo"])
-    p.add_argument("--curriculum", required=True, choices=["random", "curr1", "curr2"])
-    p.add_argument("--learning-strategy", required=True, choices=["RLIL", "IL"])
+    p.add_argument("--curriculum", required=True, choices=["random", "gv", "bd"])
+    p.add_argument("--learning-strategy", required=True, choices=["rlil", "il"])
 
     p.add_argument("--dry-run", action="store_true", help="Print the resolved script and exit.")
     p.add_argument("--list", action="store_true", help="List candidate legacy scripts with scores.")
@@ -179,7 +178,7 @@ def main(argv: List[str] | None = None) -> int:
         print(f"  tokens: {tokens}", file=sys.stderr)
         print("Tip: add an explicit mapping in --map (default scripts/legacy_map.json).", file=sys.stderr)
         example = {
-            _tuple_key("kamma", "1d", "yes", "curr1", "none"): "train/train_kamma_1d_fifo_curr1.py"
+            _tuple_key("kamma", "4d", "fifo", "gv", "rlil"): "train/train_kamma_4d_fifo_gv_rlil.py"
         }
         print(json.dumps(example, indent=2), file=sys.stderr)
         return 2
