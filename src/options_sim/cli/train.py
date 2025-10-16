@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 import re
-import runpy
+import subprocess
 import sys
 from typing import List, Tuple
 
@@ -44,9 +44,20 @@ def _python_version_guard() -> None:
         )
 
 def _build_argparser() -> argparse.ArgumentParser:
+    epilog = r"""
+Examples:
+  # Router-only flags:
+  options-sim-train --algorithm kaddpg --action-dim 1d --fifo nofifo --curriculum random --learning-strategy rlil --root .
+
+  # Pass extra args to the legacy script AFTER '--':
+  options-sim-train --algorithm kaddpg --action-dim 1d --fifo nofifo --curriculum random --learning-strategy rlil --root . -- \
+      --stiffness 600 --damping 80
+"""
     p = argparse.ArgumentParser(
         prog="options-sim-train",
-        description="Route to a legacy training script based on five switches."
+        description="Route to a legacy training script; optionally pass extra args to it after '--'.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog,
     )
     p.add_argument("--algorithm", required=True, choices=["kamma", "kaddpg"])
     p.add_argument("--action-dim", required=True, choices=["1d", "2d", "4d"])
@@ -73,6 +84,13 @@ def _build_argparser() -> argparse.ArgumentParser:
         help="Comma-separated dirs (relative to --root) to search for train_*.py",
     )
     return p
+
+def _split_argv(argv: List[str]) -> tuple[list[str], list[str]]:
+    """Split argv on '--'. Left -> router argparse; right -> legacy script."""
+    if "--" in argv:
+        i = argv.index("--")
+        return argv[:i], argv[i + 1 :]
+    return argv, []
 
 def _tuple_key(algorithm: str, action_dim: str, fifo: str, curriculum: str, learning_strategy: str) -> str:
     return "::".join([algorithm, action_dim, fifo, curriculum, learning_strategy])
@@ -149,11 +167,23 @@ def _resolve(
         return scored[0][1], tokens, scored
     return None, tokens, scored
 
+def _run_legacy(script_path: Path, legacy_argv: list[str]) -> int:
+    """Invoke the legacy script in a subprocess, passing only legacy_argv."""
+    cmd = [sys.executable, str(script_path), *legacy_argv]
+    return subprocess.call(cmd, env=dict(**os.environ))  # inherit env (ASSETS_DIR, etc.)
+
 def main(argv: List[str] | None = None) -> int:
     _python_version_guard()
-    ap = _build_argparser()
-    args = ap.parse_args(argv)
 
+    # Split arguments at '--'
+    argv = list(argv or sys.argv[1:])
+    router_argv, legacy_argv = _split_argv(argv)
+
+    # Parse router args
+    ap = _build_argparser()
+    args = ap.parse_args(router_argv)
+
+    # Resolve legacy script
     root = Path(args.root).resolve()
     script_path, tokens, scored = _resolve(
         root=root,
@@ -164,7 +194,7 @@ def main(argv: List[str] | None = None) -> int:
         learning_strategy=args.learning_strategy,
         map_rel=args.map,
         search_rel=args.search_dirs,
-        list_only=args.list
+        list_only=args.list,
     )
 
     if args.list:
@@ -187,9 +217,9 @@ def main(argv: List[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    # Execute as if run directly (preserves if __name__ == '__main__' checks)
-    runpy.run_path(str(script_path), run_name="__main__")
-    return 0
+    # Run legacy, passing only post-'--' args
+    rc = _run_legacy(script_path, legacy_argv)
+    return rc
 
 if __name__ == "__main__":
     raise SystemExit(main())
