@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import os
 from typing import List, Tuple
 
 # Keep this consistent with your pyproject.toml
