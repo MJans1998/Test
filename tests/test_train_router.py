@@ -17,7 +17,7 @@ def test_train_router_list_and_dry_run(tmp_path: Path):
         "--action-dim", "4d",
         "--fifo", "nofifo",
         "--curriculum", "random",
-        "--learning-strategy", "RLIL",
+        "--learning-strategy", "rlil",
         "--root", str(root),
     ]
 

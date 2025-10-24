@@ -18,7 +18,8 @@ def test_eval_help():
 def test_artifacts_help():
     r = _run_mod("options_sim.cli.artifacts", "--help")
     assert r.returncode == 0
-    assert "reward components" in (r.stdout + r.stderr).lower()
+    txt = (r.stdout + r.stderr).lower()
+    assert "timeseries" in txt and ("csv" in txt or "png" in txt)
 
 def test_eval_artifacts_help():
     r = _run_mod("options_sim.cli.eval_artifacts", "--help")

@@ -82,8 +82,8 @@ def _align_by_step(a: List[Tuple[int, float]], b: List[Tuple[int, float]]) -> Tu
     xs, ys = [], []
     for s, va in a:
         if s in map_b:
-            xs.append(map_b[s])  # e.g., desired velocity
-            ys.append(va)        # e.g., tracking error
+            xs.append(va)  # e.g., desired velocity
+            ys.append(map_b[s])  # e.g., tracking error
     return xs, ys
 
 
@@ -138,7 +138,7 @@ def main(argv=None) -> None:
 
     # build x (speed) and y (tracking error)
     if dv_series:
-        xs, ys = _align_by_step(te_series, dv_series)
+        xs, ys = _align_by_step(dv_series, te_series)
         x_label = "desired velocity (m/s)"
         x_note = f"(tag: {dv_tag})"
     else:
