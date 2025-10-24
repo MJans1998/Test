@@ -13,7 +13,8 @@ from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
 
-
+import my_assets
+from my_assets import origin_v18_usd
 
 class AvularOrigin_v10(Robot):
     def __init__(
@@ -30,7 +31,8 @@ class AvularOrigin_v10(Robot):
         self._name = name
 
         if self._usd_path is None:
-            self._usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets/urdf/origin_sym", "origin_sym.usd"))
+            with origin_v18_usd() as p:
+                self._usd_path = str(p)
 
         add_reference_to_stage(self._usd_path, prim_path)
 

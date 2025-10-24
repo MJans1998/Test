@@ -9,9 +9,6 @@ import sys
 import os
 from typing import List, Tuple
 
-# Keep this consistent with your pyproject.toml
-RECOMMENDED_MIN = (3, 10)
-RECOMMENDED_MAX = (3, 12)  # exclusive
 
 NORMALIZE = {
     # algorithm
@@ -33,16 +30,6 @@ NORMALIZE = {
     "il": "il",
 }
 
-def _python_version_guard() -> None:
-    v = sys.version_info
-    if not (RECOMMENDED_MIN <= (v.major, v.minor) < RECOMMENDED_MAX):
-        print(
-            f"[WARN] Detected Python {v.major}.{v.minor}. "
-            f"Project targets >= {RECOMMENDED_MIN[0]}.{RECOMMENDED_MIN[1]} "
-            f"and < {RECOMMENDED_MAX[0]}.{RECOMMENDED_MAX[1]} "
-            "(to match expected Isaac Sim images).",
-            file=sys.stderr,
-        )
 
 def _build_argparser() -> argparse.ArgumentParser:
     epilog = r"""
@@ -114,10 +101,10 @@ def _score_file(path: Path, tokens: List[str]) -> float:
     for t in tokens:
         if t in name:
             score += 1.0
-    if name.startswith("train_"):
-        score += 0.5
     if score == float(len(tokens)):
         score += 1.0  # perfect-match bonus
+    if name.startswith("train_"):
+        score += 0.5
     return score
 
 def _load_override_map(map_path: Path) -> dict:
@@ -144,9 +131,8 @@ def _resolve(
         NORMALIZE[action_dim],
         NORMALIZE[fifo],
         NORMALIZE[curriculum],
+        NORMALIZE[learning_strategy],
     ]
-    if learning_strategy != "none":
-        tokens.append(NORMALIZE[learning_strategy])
 
     # 1) explicit mapping wins
     mapping = _load_override_map((root / map_rel).resolve())
@@ -164,7 +150,7 @@ def _resolve(
     if list_only:
         return None, tokens, scored
 
-    if scored and scored[0][0] >= 3.0:  # guard against random train*.py
+    if scored and scored[0][0] >= 6.0:  # guard against random train*.py
         return scored[0][1], tokens, scored
     return None, tokens, scored
 
@@ -174,7 +160,6 @@ def _run_legacy(script_path: Path, legacy_argv: list[str]) -> int:
     return subprocess.call(cmd, env=dict(**os.environ))  # inherit env (ASSETS_DIR, etc.)
 
 def main(argv: List[str] | None = None) -> int:
-    _python_version_guard()
 
     # Split arguments at '--'
     argv = list(argv or sys.argv[1:])
