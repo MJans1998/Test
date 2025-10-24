@@ -16,8 +16,6 @@ from my_models.categorical import CategoricalMixin
 from my_agents.ddpg import DDPG
 from my_trainers.sequential_KA import SequentialTrainer
 
-# set the seed for reproducibility
-seed = set_seed(42)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
@@ -71,8 +69,12 @@ arg_parser.add_argument("--static_friction", type=float, default=0.85)
 arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
 arg_parser.add_argument("--linear_x", type=float, default=[1., 2.0])
+arg_parser.add_argument("--seed", type=int, default=42)
 
 parsed_config = arg_parser.parse_args().__dict__
+
+# set the seed for reproducibility
+seed = set_seed(parsed_config["seed"])
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -249,15 +251,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_1D_g1",
-        "experiment_name": "KA-DDPG_1D_g1",
+        "directory": "/workspace/Options_In_Simulation/my_runs/kaddpg_1d_nofifo_random_RLIL",
+        "experiment_name": f"kaddpg_1d_nofifo_random_RLIL_s{seed}",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_1D_g1",
+                         "name": f"kaddpg_1d_nofifo_random_RLIL_s{seed}",
                          "tags": ["DDPG", "KA", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }

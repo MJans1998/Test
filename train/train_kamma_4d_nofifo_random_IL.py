@@ -70,8 +70,12 @@ arg_parser.add_argument("--static_friction", type=float, default=0.85)
 arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
 arg_parser.add_argument("--linear_x", type=float, default=[1., 2.0])
+arg_parser.add_argument("--seed", type=int, default=42)
 
 parsed_config = arg_parser.parse_args().__dict__
+
+# set the seed for reproducibility
+seed = set_seed(parsed_config["seed"])
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -145,15 +149,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_g1d_g21",
-        "experiment_name": "KAMMA_g1d_g21",
+        "directory": "/workspace/Options_In_Simulation/my_runs/kamma_4d_nofifo_random_IL",
+        "experiment_name": f"kamma_4d_nofifo_random_IL_s{seed}",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KAMMA_g1d_g21",
+                         "name": f"kamma_4d_nofifo_random_IL_s{seed}",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
