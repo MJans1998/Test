@@ -87,7 +87,7 @@ def _align_by_step(a: List[Tuple[int, float]], b: List[Tuple[int, float]]) -> Tu
     return xs, ys
 
 
-def _moving_avg(vals: List[float], k: int) -> List[float]:
+def _moving_average(vals: List[float], k: int) -> List[float]:
     if k <= 1 or not vals:
         return vals
     out = []
@@ -150,7 +150,7 @@ def main(argv=None) -> None:
         x_note = f"(synthetic ramp {args.vmin}→{args.vmax})"
 
     if args.smooth and args.smooth > 1:
-        ys = _moving_avg(ys, args.smooth)
+        ys = _moving_average(ys, args.smooth)
 
     # write CSV
     csv_path = run_dir / "tracking_error_vs_speed.csv"
